@@ -1,0 +1,59 @@
+========================================
+WinPathScan Bug Fix - Version 1.1.1
+========================================
+Date: October 22, 2025
+
+PROBLEM IDENTIFIED:
+-------------------
+When batch files were run with elevated privileges (Run as Administrator),
+they would execute from C:\Windows\System32 instead of the WinPathScan folder.
+This caused errors like:
+- "ERROR: PowerShell script not found!"
+- "Current directory: C:\Windows\System32"
+
+ROOT CAUSE:
+-----------
+Windows batch files, when run with admin privileges or via shortcuts,
+don't automatically change to their own directory. They inherit the
+working directory from the calling context, which is often System32.
+
+SOLUTION APPLIED:
+-----------------
+Added the following line at the beginning of ALL batch files:
+    cd /d "%~dp0"
+
+This command:
+- %~dp0 = Returns the drive and path of the batch file itself
+- cd /d = Changes directory, including changing drives if necessary
+- Result: Batch file always runs from its own location
+
+FILES FIXED:
+------------
+1. WinPathScan-Fixed.bat       (Fixed - Line 3)
+2. Install-Requirements.bat    (Fixed - Line 3)
+3. Run-LongPathScan.bat        (Fixed - Line 3)
+4. Quick-Scan-Documents.bat    (Fixed - Line 3)
+5. Scan-This-Folder.bat        (Fixed - Line 3)
+6. Setup-And-Run.bat           (Fixed - Line 3)
+
+TESTING RECOMMENDATIONS:
+------------------------
+1. Test running batch files by double-clicking from Windows Explorer
+2. Test running batch files as Administrator (Right-click → Run as Administrator)
+3. Test running batch files from different working directories
+4. Test with shortcuts on Desktop/Start Menu
+
+VERIFICATION:
+-------------
+All batch files now start with:
+    @echo off
+    REM Change to the directory where this batch file is located
+    cd /d "%~dp0"
+    [rest of the script...]
+
+This ensures consistent behavior regardless of how the batch file is executed.
+
+========================================
+End of Bug Fix Notes
+========================================
+
