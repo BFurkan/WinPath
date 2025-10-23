@@ -59,13 +59,13 @@ if %errorLevel% == 0 (
     set nugetInstalled=false
 )
 
-REM Check PSWriteHTML module
-powershell -Command "try { $module = Get-Module -ListAvailable PSWriteHTML | Select-Object -First 1; if ($module) { Write-Host 'PSWriteHTML found' } else { Write-Host 'PSWriteHTML not found' } } catch { Write-Host 'PSWriteHTML not found' }" 2>nul | findstr "PSWriteHTML found" >nul
+REM Check PSWriteHTML module (test actual import, not just existence)
+powershell -Command "try { Import-Module PSWriteHTML -Force -ErrorAction Stop; Write-Host 'PSWriteHTML working'; Remove-Module PSWriteHTML -ErrorAction SilentlyContinue } catch { Write-Host 'PSWriteHTML not working' }" 2>nul | findstr "PSWriteHTML working" >nul
 if %errorLevel% == 0 (
-    echo [OK] PSWriteHTML module found
+    echo [OK] PSWriteHTML module is working
     set pswritehtmlInstalled=true
 ) else (
-    echo [WARNING] PSWriteHTML module not found
+    echo [WARNING] PSWriteHTML module not accessible
     set pswritehtmlInstalled=false
 )
 
