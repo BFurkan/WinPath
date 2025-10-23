@@ -36,13 +36,13 @@ if not exist "%~dp0WinPathScan.ps1" (
 echo [OK] WinPathScan.ps1 found
 echo.
 
-REM Quick check for PSWriteHTML module (test actual import)
+REM Quick check for PSWriteHTML module (test full functionality)
 echo Checking for required modules...
-powershell -Command "try { Import-Module PSWriteHTML -Force -ErrorAction Stop; Write-Host 'PSWriteHTML working'; Remove-Module PSWriteHTML -ErrorAction SilentlyContinue } catch { Write-Host 'PSWriteHTML not working' }" 2>nul | findstr "PSWriteHTML working" >nul
+powershell -Command "try { Import-Module PSWriteHTML -Force -ErrorAction Stop; $commands = Get-Command -Module PSWriteHTML -ErrorAction SilentlyContinue; if ($commands.Count -gt 50) { Write-Host 'PSWriteHTML fully working' } else { Write-Host 'PSWriteHTML incomplete' }; Remove-Module PSWriteHTML -ErrorAction SilentlyContinue } catch { Write-Host 'PSWriteHTML not working' }" 2>nul | findstr "PSWriteHTML fully working" >nul
 if %errorLevel% == 0 (
-    echo [OK] PSWriteHTML module is working
+    echo [OK] PSWriteHTML module is fully functional
 ) else (
-    echo [WARNING] PSWriteHTML module not accessible - scan may fail
+    echo [WARNING] PSWriteHTML module not functional - scan may fail
     echo Run WinPathScan-Setup.bat first to install required modules
     echo.
     set /p continue_anyway="Continue anyway? (Y/N): "
@@ -51,7 +51,7 @@ if %errorLevel% == 0 (
         pause
         exit /b 1
     )
-    echo [WARNING] Continuing without accessible modules - scan may fail
+    echo [WARNING] Continuing without functional modules - scan may fail
 )
 echo.
 

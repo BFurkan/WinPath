@@ -54,14 +54,14 @@ if %errorLevel% == 0 (
     set nugetInstalled=false
 )
 
-REM Check if PSWriteHTML module is actually usable (not just exists)
+REM Check if PSWriteHTML module is actually usable (test with command count)
 echo Checking PSWriteHTML module...
-powershell -Command "try { Import-Module PSWriteHTML -Force -ErrorAction Stop; Write-Host 'PSWriteHTML import successful'; Remove-Module PSWriteHTML -ErrorAction SilentlyContinue } catch { Write-Host 'PSWriteHTML import failed' }" 2>nul | findstr "PSWriteHTML import successful" >nul
+powershell -Command "try { Import-Module PSWriteHTML -Force -ErrorAction Stop; $commands = Get-Command -Module PSWriteHTML -ErrorAction SilentlyContinue; if ($commands.Count -gt 50) { Write-Host 'PSWriteHTML fully functional' } else { Write-Host 'PSWriteHTML incomplete' }; Remove-Module PSWriteHTML -ErrorAction SilentlyContinue } catch { Write-Host 'PSWriteHTML import failed' }" 2>nul | findstr "PSWriteHTML fully functional" >nul
 if %errorLevel% == 0 (
-    echo [OK] PSWriteHTML module is installed and working
+    echo [OK] PSWriteHTML module is installed and fully functional
     set pswritehtmlInstalled=true
 ) else (
-    echo [INFO] PSWriteHTML module needs installation or is not accessible
+    echo [INFO] PSWriteHTML module needs installation or repair
     set pswritehtmlInstalled=false
 )
 
