@@ -156,7 +156,8 @@ REM Install PSWriteHTML module if needed
 if "!pswritehtmlInstalled!"=="false" (
     echo Step 2: Installing PSWriteHTML module...
     echo This may take a moment...
-    powershell -Command "try { Install-Module -Name PSWriteHTML -Force -AllowClobber -Scope CurrentUser -ErrorAction Stop; Write-Host '[SUCCESS] PSWriteHTML module installed' } catch { Write-Host '[ERROR] PSWriteHTML installation failed:' $_.Exception.Message }"
+    echo Installing to standard location for better cross-computer compatibility...
+    powershell -Command "try { $originalPath = $env:PSModulePath; $env:PSModulePath = ($env:PSModulePath -split ';' | Where-Object { $_ -notlike '*OneDrive*' }) -join ';'; Install-Module -Name PSWriteHTML -Force -AllowClobber -Scope CurrentUser -ErrorAction Stop; $env:PSModulePath = $originalPath; Write-Host '[SUCCESS] PSWriteHTML module installed in standard location' } catch { Write-Host '[ERROR] PSWriteHTML installation failed:' $_.Exception.Message }"
 ) else (
     echo Step 2: PSWriteHTML module already installed - skipping
 )
