@@ -22,9 +22,32 @@ Switch to include NTFS permissions in the analysis.
 Get-LongPathAnalysis -Path "C:\Users" -Limit 260 -ExportFormat "Both" -IncludePermissions
 #>
 
-# Required modules
-#Requires -Module PSWriteHTML
-#Requires -RunAsAdministrator
+# Check for required modules with graceful error handling
+$missingModules = @()
+if (-not (Get-Module -ListAvailable -Name PSWriteHTML)) {
+    $missingModules += "PSWriteHTML"
+}
+
+if ($missingModules.Count -gt 0) {
+    Write-Host ""
+    Write-Host "========================================" -ForegroundColor Red
+    Write-Host "   Missing Required Modules" -ForegroundColor Red
+    Write-Host "========================================" -ForegroundColor Red
+    Write-Host ""
+    Write-Host "The following PowerShell modules are required but not installed:" -ForegroundColor Yellow
+    foreach ($module in $missingModules) {
+        Write-Host "  - $module" -ForegroundColor Yellow
+    }
+    Write-Host ""
+    Write-Host "To install the required modules, run:" -ForegroundColor Cyan
+    Write-Host "  WinPathScan-Setup.bat" -ForegroundColor White
+    Write-Host ""
+    Write-Host "Or install manually:" -ForegroundColor Cyan
+    Write-Host "  Install-Module -Name PSWriteHTML -Force -AllowClobber -Scope CurrentUser" -ForegroundColor White
+    Write-Host ""
+    Write-Host "========================================" -ForegroundColor Red
+    exit 1
+}
 
 function Get-LongPathAnalysis {
     [CmdletBinding()]
