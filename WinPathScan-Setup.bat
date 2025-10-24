@@ -5,25 +5,25 @@ setlocal enabledelayedexpansion
 title WinPathScan v2.0 - One-Time Setup
 color 0A
 
-REM ========================================
-REM Auto-elevate to Administrator for AllUsers install
-REM ========================================
-net session >nul 2>&1
-if %errorLevel% neq 0 (
-    echo Requesting Administrator privileges...
-    powershell -Command "Start-Process -FilePath '%~f0' -Verb RunAs"
-    exit /b 0
-)
-
-REM Default scope is AllUsers when elevated; fallback later if needed
-set "installScope=AllUsers"
-
 cls
 echo.
 echo ========================================
 echo    WinPathScan v2.0 - One-Time Setup
-echo    OneDrive/SharePoint Compatibility Tool
 echo ========================================
+echo.
+
+REM Check for Admin privileges to determine install scope
+set "installScope=CurrentUser"
+net session >nul 2>&1
+if %errorLevel% == 0 (
+    echo [INFO] Running as Administrator.
+    set "installScope=AllUsers"
+    echo [INFO] Modules will be installed for ALL USERS on this computer.
+) else (
+    echo [INFO] Running as a standard user.
+    echo [INFO] Modules will be installed for the CURRENT USER only.
+    echo [INFO] To install for all users, right-click this file and select 'Run as administrator'.
+)
 echo.
 
 echo This will install the required PowerShell modules for WinPathScan.
@@ -116,19 +116,6 @@ if exist "%~dp0.winpathscan-setup-v!currentVersion!.marker" (
         echo.
         echo Proceeding with forced reinstallation...
     )
-)
-
-REM Check admin status
-net session >nul 2>&1
-if %errorLevel% == 0 (
-    echo [OK] Running with Administrator privileges
-    set isAdmin=true
-    set "installScope=AllUsers"
-) else (
-    echo [INFO] Running as standard user
-    echo Some operations may require admin rights
-    set isAdmin=false
-    set "installScope=CurrentUser"
 )
 
 echo.
