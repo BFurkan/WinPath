@@ -56,25 +56,25 @@ set pswritehtmlInstalled=false
 set setupComplete=false
 set currentVersion=2.0.0
 
-REM Check if NuGet Package Provider is installed
-echo Checking NuGet Package Provider...
-powershell -Command "try { $nuget = Get-PackageProvider -Name NuGet -ErrorAction SilentlyContinue; if ($nuget) { Write-Host 'NuGet Provider found' } else { Write-Host 'NuGet Provider not found' } } catch { Write-Host 'NuGet Provider not found' }" 2>nul | findstr "NuGet Provider found" >nul
+REM Check if NuGet Package Provider is installed in the target scope
+echo Checking NuGet Package Provider (Scope: !installScope!)...
+powershell -Command "if (Get-PackageProvider -Name NuGet -Scope '!installScope!' -ErrorAction SilentlyContinue) { Write-Host 'NuGet Provider found' } else { Write-Host 'NuGet Provider not found' }" 2>nul | findstr "NuGet Provider found" >nul
 if %errorLevel% == 0 (
-    echo [OK] NuGet Package Provider already installed
+    echo [OK] NuGet Package Provider already installed in scope.
     set nugetInstalled=true
 ) else (
-    echo [INFO] NuGet Package Provider needs installation
+    echo [INFO] NuGet Package Provider needs installation in scope.
     set nugetInstalled=false
 )
 
-REM Check if PSWriteHTML module is actually usable (test with command count)
-echo Checking PSWriteHTML module...
-powershell -Command "try { Import-Module PSWriteHTML -Force -ErrorAction Stop; $commands = Get-Command -Module PSWriteHTML -ErrorAction SilentlyContinue; if ($commands.Count -gt 50) { Write-Host 'PSWriteHTML fully functional' } else { Write-Host 'PSWriteHTML incomplete' }; Remove-Module PSWriteHTML -ErrorAction SilentlyContinue } catch { Write-Host 'PSWriteHTML import failed' }" 2>nul | findstr "PSWriteHTML fully functional" >nul
+REM Check if PSWriteHTML module is installed in the target scope
+echo Checking PSWriteHTML module (Scope: !installScope!)...
+powershell -Command "if (Get-Module -ListAvailable -Name PSWriteHTML -Scope '!installScope!' -ErrorAction SilentlyContinue) { Write-Host 'PSWriteHTML found' } else { Write-Host 'PSWriteHTML not found' }" 2>nul | findstr "PSWriteHTML found" >nul
 if %errorLevel% == 0 (
-    echo [OK] PSWriteHTML module is installed and fully functional
+    echo [OK] PSWriteHTML module is installed and accessible in scope.
     set pswritehtmlInstalled=true
 ) else (
-    echo [INFO] PSWriteHTML module needs installation or repair
+    echo [INFO] PSWriteHTML module needs installation in scope.
     set pswritehtmlInstalled=false
 )
 
