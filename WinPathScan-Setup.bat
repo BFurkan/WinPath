@@ -5,6 +5,19 @@ setlocal enabledelayedexpansion
 title WinPathScan v2.0 - One-Time Setup
 color 0A
 
+REM ========================================
+REM Auto-elevate to Administrator for AllUsers install
+REM ========================================
+net session >nul 2>&1
+if %errorLevel% neq 0 (
+    echo Requesting Administrator privileges...
+    powershell -Command "Start-Process -FilePath '%~f0' -Verb RunAs"
+    exit /b 0
+)
+
+REM Default scope is AllUsers when elevated; fallback later if needed
+set "installScope=AllUsers"
+
 cls
 echo.
 echo ========================================
@@ -110,10 +123,12 @@ net session >nul 2>&1
 if %errorLevel% == 0 (
     echo [OK] Running with Administrator privileges
     set isAdmin=true
+    set "installScope=AllUsers"
 ) else (
     echo [INFO] Running as standard user
     echo Some operations may require admin rights
     set isAdmin=false
+    set "installScope=CurrentUser"
 )
 
 echo.
@@ -146,7 +161,7 @@ REM Install NuGet Package Provider if needed
 if "!nugetInstalled!"=="false" (
     echo Step 1: Installing NuGet Package Provider...
     echo This may take a moment...
-    powershell -Command "try { Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Scope CurrentUser -ErrorAction Stop; Write-Host '[SUCCESS] NuGet Package Provider installed' } catch { Write-Host '[ERROR] NuGet installation failed:' $_.Exception.Message }"
+    powershell -Command "try { [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Scope !installScope! -ErrorAction Stop; Write-Host '[SUCCESS] NuGet Package Provider installed' } catch { Write-Host '[ERROR] NuGet installation failed:' $_.Exception.Message }"
 ) else (
     echo Step 1: NuGet Package Provider already installed - skipping
 )
@@ -156,8 +171,8 @@ REM Install PSWriteHTML module if needed
 if "!pswritehtmlInstalled!"=="false" (
     echo Step 2: Installing PSWriteHTML module...
     echo This may take a moment...
-    echo Installing to standard location for better cross-computer compatibility...
-    powershell -Command "try { $originalPath = $env:PSModulePath; $env:PSModulePath = ($env:PSModulePath -split ';' | Where-Object { $_ -notlike '*OneDrive*' }) -join ';'; Install-Module -Name PSWriteHTML -Force -AllowClobber -Scope CurrentUser -ErrorAction Stop; $env:PSModulePath = $originalPath; Write-Host '[SUCCESS] PSWriteHTML module installed in standard location' } catch { Write-Host '[ERROR] PSWriteHTML installation failed:' $_.Exception.Message }"
+    echo Installing with scope: !installScope! (avoids OneDrive paths)...
+    powershell -Command "try { [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; Set-PSRepository -Name PSGallery -InstallationPolicy Trusted -ErrorAction SilentlyContinue; $originalPath = $env:PSModulePath; $env:PSModulePath = ($env:PSModulePath -split ';' | Where-Object { $_ -notlike '*OneDrive*' }) -join ';'; Install-Module -Name PSWriteHTML -Force -AllowClobber -Scope !installScope! -ErrorAction Stop; $env:PSModulePath = $originalPath; Write-Host '[SUCCESS] PSWriteHTML module installed' } catch { Write-Host '[ERROR] PSWriteHTML installation failed:' $_.Exception.Message }"
 ) else (
     echo Step 2: PSWriteHTML module already installed - skipping
 )
